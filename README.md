@@ -17,9 +17,9 @@ Set `VITE_BASE` to override the base path (include the trailing slash). Example:
 
 Open `?embed=1` to hide the preview header. In an iframe the page posts `{ source: "daykodee-home", type: "resize", height }` to the parent so a host page can size the frame. CTA links use the Wix paths `/shop`, `/contact`, `/about`, and `/category/...` with `target="_top"`. When the page is framed, those paths resolve against the parent page URL.
 
-## Spline
+## Products
 
-Set `SPLINE_SCENE_URL` in `src/config.js`, or set `data-spline-url` on a `.spline-slot`. Either one swaps the CSS product float for the Spline viewer. The viewer script loads only after first paint, and only when a slot is near the viewport. Phones keep the poster. Tablets load a scene only when it is 2 MB or smaller.
+The hero shows the bottle, cap, and backpack from `public/models`. The why section shows the backpack again. Three.js (`GLTFLoader` and the meshopt decoder) loads after first paint, and only once a product view is near the viewport. One renderer draws every view, with the pixel ratio capped at 1.5, and it pauses while the views are off screen. `logo-decal.png` is projected on the front of each model. `prefers-reduced-motion` keeps that front view still.
 
 ## Motion and video
 

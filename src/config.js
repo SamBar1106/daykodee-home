@@ -1,11 +1,4 @@
 /**
- * One switch for the future Spline scene.
- * Leave this empty to keep the CSS product float.
- * A non-empty data-spline-url on a .spline-slot overrides this for that slot.
- */
-export const SPLINE_SCENE_URL = "";
-
-/**
  * Beat times, in seconds, inside each hero clip.
  * Every time bounces the H1.
  * The last time crossfades to the next clip (200ms, no color panel).
