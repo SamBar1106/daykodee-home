@@ -24,10 +24,5 @@ motion.then((api) => {
 setupProducts();
 
 window.setTimeout(() => {
-  document.querySelectorAll(".pop").forEach((el) => {
-    if (el.dataset.split !== "1") el.style.opacity = "1";
-  });
-  document.querySelectorAll(".brand__img, .hero__mark img").forEach((img) => {
-    if (Number(getComputedStyle(img).opacity) === 0) img.style.opacity = "1";
-  });
-}, 5000);
+  document.documentElement.classList.add("show-text");
+}, 1500);

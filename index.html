@@ -22,9 +22,26 @@
     <style>
       html { background: #00276c; }
       body { margin: 0; background: #ebdfc2; color: #00276c; }
-      html.js:not(.reduce-motion) .section__stage { opacity: 0; }
-      html.js:not(.reduce-motion) .brand__img,
-      html.js:not(.reduce-motion) .hero__mark img { opacity: 0; }
+      html.js:not(.reduce-motion):not(.is-embed):not(.show-text) .section__stage { opacity: 0; }
+      html.js:not(.reduce-motion):not(.show-text) .brand__img,
+      html.js:not(.reduce-motion):not(.show-text) .hero__mark img { opacity: 0; }
+      html.show-text .pop,
+      html.show-text .section__stage,
+      html.show-text .card,
+      html.show-text .why__item,
+      html.show-text .char,
+      html.show-text .word,
+      html.show-text .step,
+      html.show-text .step__num,
+      html.is-embed.is-ios .pop,
+      html.is-embed.is-ios .section__stage,
+      html.is-embed.is-ios .card,
+      html.is-embed.is-ios .why__item,
+      html.is-embed.is-ios .brand__img,
+      html.is-embed.is-ios .hero__mark img {
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
       .logo-intro { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; pointer-events: none; }
       html.reduce-motion .logo-intro { display: none; }
       html.js:not(.reduce-motion) .logo-intro img { width: min(68vw, 300px); height: auto; opacity: 0; }
@@ -48,9 +65,12 @@
           framed = true;
         }
         if (framed || new URLSearchParams(location.search).get("embed") === "1") root.classList.add("is-embed");
+        var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+        if (ios) root.classList.add("is-ios");
+        if (root.classList.contains("is-embed") && ios) root.classList.add("show-text");
         setTimeout(function () {
-          if (!document.querySelector("[data-split='1']")) root.classList.add("show-text");
-        }, 4500);
+          root.classList.add("show-text");
+        }, 1500);
       })();
     </script>
   </head>
@@ -138,8 +158,8 @@
           <p class="section__intro">Everyday items your families will use and your kids will love, all ready to carry your center's name.</p>
           <div class="cards">
             <article class="card">
-              <div class="card__media">
-                <video class="card__video" muted playsinline preload="metadata" poster="%BASE_URL%media/assemble-mugs.webp" src="%BASE_URL%media/assemble-mugs.mp4" aria-label="Mugs"></video>
+              <div class="card__media" style="--poster: url('%BASE_URL%media/assemble-mugs.webp')">
+                <video class="card__video" muted autoplay loop playsinline webkit-playsinline preload="auto" poster="%BASE_URL%media/assemble-mugs.webp" src="%BASE_URL%media/assemble-mugs.mp4" aria-label="Mugs"></video>
                 <span class="card__border" aria-hidden="true"></span>
               </div>
               <div class="card__body">
@@ -149,8 +169,8 @@
               </div>
             </article>
             <article class="card">
-              <div class="card__media">
-                <video class="card__video" muted playsinline preload="metadata" poster="%BASE_URL%media/assemble-shirts.webp" src="%BASE_URL%media/assemble-shirts.mp4" aria-label="Shirts"></video>
+              <div class="card__media" style="--poster: url('%BASE_URL%media/assemble-shirts.webp')">
+                <video class="card__video" muted autoplay loop playsinline webkit-playsinline preload="auto" poster="%BASE_URL%media/assemble-shirts.webp" src="%BASE_URL%media/assemble-shirts.mp4" aria-label="Shirts"></video>
                 <span class="card__border" aria-hidden="true"></span>
               </div>
               <div class="card__body">
@@ -160,8 +180,8 @@
               </div>
             </article>
             <article class="card">
-              <div class="card__media">
-                <video class="card__video" muted playsinline preload="metadata" poster="%BASE_URL%media/assemble-bags.webp" src="%BASE_URL%media/assemble-bags.mp4" aria-label="Bags"></video>
+              <div class="card__media" style="--poster: url('%BASE_URL%media/assemble-bags.webp')">
+                <video class="card__video" muted autoplay loop playsinline webkit-playsinline preload="auto" poster="%BASE_URL%media/assemble-bags.webp" src="%BASE_URL%media/assemble-bags.mp4" aria-label="Bags"></video>
                 <span class="card__border" aria-hidden="true"></span>
               </div>
               <div class="card__body">
@@ -171,8 +191,8 @@
               </div>
             </article>
             <article class="card">
-              <div class="card__media">
-                <video class="card__video" muted playsinline preload="metadata" poster="%BASE_URL%media/assemble-bottles.webp" src="%BASE_URL%media/assemble-bottles.mp4" aria-label="Water bottles"></video>
+              <div class="card__media" style="--poster: url('%BASE_URL%media/assemble-bottles.webp')">
+                <video class="card__video" muted autoplay loop playsinline webkit-playsinline preload="auto" poster="%BASE_URL%media/assemble-bottles.webp" src="%BASE_URL%media/assemble-bottles.mp4" aria-label="Water bottles"></video>
                 <span class="card__border" aria-hidden="true"></span>
               </div>
               <div class="card__body">
@@ -182,8 +202,8 @@
               </div>
             </article>
             <article class="card">
-              <div class="card__media">
-                <video class="card__video" muted playsinline preload="metadata" poster="%BASE_URL%media/assemble-hats.webp" src="%BASE_URL%media/assemble-hats.mp4" aria-label="Hats"></video>
+              <div class="card__media" style="--poster: url('%BASE_URL%media/assemble-hats.webp')">
+                <video class="card__video" muted autoplay loop playsinline webkit-playsinline preload="auto" poster="%BASE_URL%media/assemble-hats.webp" src="%BASE_URL%media/assemble-hats.mp4" aria-label="Hats"></video>
                 <span class="card__border" aria-hidden="true"></span>
               </div>
               <div class="card__body">

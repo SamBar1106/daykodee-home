@@ -419,7 +419,21 @@ export async function setupMotion() {
   const reduceNow =
     document.documentElement.classList.contains("reduce-motion") ||
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const iosEmbed =
+    document.documentElement.classList.contains("is-embed") &&
+    document.documentElement.classList.contains("is-ios");
   const intro = document.querySelector(".logo-intro");
+  if (iosEmbed) {
+    document.documentElement.classList.add("show-text");
+    intro?.remove();
+    gsap.set(".brand__img, .hero__mark img, .pop, .section__stage, .card, .why__item, .step, .step__num", {
+      opacity: 1,
+      visibility: "visible",
+    });
+    introDone.resolve();
+    beatsReady.resolve();
+    return api;
+  }
   if (reduceNow || !intro) {
     intro?.remove();
     gsap.set(".brand__img, .hero__mark img", { opacity: 1 });

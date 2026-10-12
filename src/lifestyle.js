@@ -12,10 +12,10 @@ export function setupLifestyle() {
   let armed = false;
 
   const pauseOthers = () => {
-    document.querySelectorAll("video").forEach((other) => {
-      if (other !== video && !other.paused) other.pause();
+    document.querySelectorAll(".hero__video").forEach((other) => {
+      if (!other.paused) other.pause();
     });
-  };
+  }
 
   const load = () => {
     if (armed) return;

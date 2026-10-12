@@ -492,7 +492,7 @@ html.reduce-motion .logo-intro {
   white-space: nowrap;
 }
 
-.js .pop {
+html.js:not(.show-text):not(.is-embed) .pop {
   opacity: 0;
 }
 
@@ -500,14 +500,37 @@ html.reduce-motion .pop,
 html.reduce-motion .brand__img,
 html.reduce-motion .hero__mark img,
 html.show-text .pop,
-html.js.show-text .section__stage,
-html.js.show-text .brand__img,
-html.js.show-text .hero__mark img {
-  opacity: 1;
+html.show-text .section__stage,
+html.show-text .card,
+html.show-text .why__item,
+html.show-text .char,
+html.show-text .word,
+html.show-text .step,
+html.show-text .step__num,
+html.show-text .step h3,
+html.show-text .step p,
+html.show-text .brand__img,
+html.show-text .hero__mark img,
+html.show-text #ready .btn,
+html.is-embed.is-ios .pop,
+html.is-embed.is-ios .section__stage,
+html.is-embed.is-ios .card,
+html.is-embed.is-ios .why__item,
+html.is-embed.is-ios .char,
+html.is-embed.is-ios .word,
+html.is-embed.is-ios .brand__img,
+html.is-embed.is-ios .hero__mark img {
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
-html.js.show-text .section__stage {
-  transform: none;
+html.show-text .char,
+html.show-text .word,
+html.show-text .section__stage,
+html.is-embed.is-ios .char,
+html.is-embed.is-ios .word,
+html.is-embed.is-ios .section__stage {
+  transform: none !important;
 }
 
 .section {
@@ -566,12 +589,16 @@ h2 {
   position: relative;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: var(--navy);
+  background-color: var(--navy);
+  background-image: var(--poster);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border-radius: 1.15rem 1.15rem 0 0;
 }
 
 .card:nth-child(even) .card__media {
-  background: var(--royal);
+  background-color: var(--royal);
 }
 
 .card__media img,
@@ -582,6 +609,10 @@ h2 {
   object-position: center;
   transform-origin: center;
   display: block;
+  background-image: var(--poster);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .card__border {

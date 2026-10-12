@@ -25,6 +25,44 @@ function pageFillsFrame() {
   return window.innerHeight + 8 >= document.documentElement.scrollHeight;
 }
 
+function isTouchDevice() {
+  return window.matchMedia("(pointer: coarse)").matches || navigator.maxTouchPoints > 0;
+}
+
+/** Desktop pages scrub. Embeds and touch devices loop, because iOS will not paint a paused seek. */
+function useScrub() {
+  return !isEmbed() && !isTouchDevice();
+}
+
+function playClip(video) {
+  video.muted = true;
+  video.loop = true;
+  video.autoplay = true;
+  video.playsInline = true;
+  video.setAttribute("playsinline", "");
+  video.setAttribute("webkit-playsinline", "");
+  video.preload = "auto";
+  if (!video.paused && video.currentTime > 0) return;
+  const pending = video.play();
+  if (pending && typeof pending.catch === "function") pending.catch(() => {});
+}
+
+function setupLoop(videos) {
+  const play = () => videos.forEach(playClip);
+  play();
+  window.addEventListener("load", play);
+  window.addEventListener("touchstart", play, { once: true, passive: true });
+  window.addEventListener("scroll", play, { once: true, passive: true });
+  window.setTimeout(play, 600);
+  videos.forEach((video) => {
+    video.addEventListener("loadeddata", () => playClip(video));
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) videos.forEach((video) => video.pause());
+    else play();
+  });
+}
+
 /**
  * Scrub each category clip with scroll. Time 0 is the card entering the
  * viewport; the end of the clip is the card centered. The clip itself can
@@ -43,11 +81,25 @@ export function setupCategoryVideos() {
     window.matchMedia(REDUCE).matches;
   if (reduce) {
     videos.forEach((video) => {
+      video.removeAttribute("autoplay");
       video.removeAttribute("src");
       video.load();
     });
     return;
   }
+
+  if (!useScrub()) {
+    setupLoop(videos);
+    return;
+  }
+
+  videos.forEach((video) => {
+    video.autoplay = false;
+    video.loop = false;
+    video.removeAttribute("autoplay");
+    video.removeAttribute("loop");
+    video.pause();
+  });
 
   const embed = isEmbed();
   const framed = window.parent !== window;

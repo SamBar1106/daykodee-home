@@ -67,7 +67,7 @@ export function setupHero({ onCut, introDone, beatsReady }) {
   }
 
   function pauseOthers(current) {
-    document.querySelectorAll("video").forEach((video) => {
+    document.querySelectorAll(".hero__video").forEach((video) => {
       if (video !== current && !video.paused) video.pause();
     });
   }
