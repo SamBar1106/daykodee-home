@@ -246,8 +246,8 @@ function flyLogo(intro, introDone) {
   flyLogo.started = true;
   const image = intro.querySelector("img");
   const embed = document.documentElement.classList.contains("is-embed");
-  const target = document.querySelector(embed ? ".hero__mark img" : ".brand__img");
-  if (!image || !target) {
+  const target = embed ? null : document.querySelector(".brand__img");
+  if (!image || (!embed && !target)) {
     intro.remove();
     gsap.set(".brand__img, .hero__mark img", { opacity: 1 });
     introDone.resolve();
@@ -255,7 +255,7 @@ function flyLogo(intro, introDone) {
   }
 
   const reveal = () => {
-    gsap.set(".brand__img, .hero__mark img", { opacity: 1 });
+    if (!embed) gsap.set(".brand__img, .hero__mark img", { opacity: 1 });
     intro.remove();
     introDone.resolve();
   };
@@ -264,6 +264,16 @@ function flyLogo(intro, introDone) {
   const timeline = gsap.timeline();
   flyLogo.tween = timeline;
   timeline.to(image, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2.2)" });
+  if (embed) {
+    timeline.to(image, {
+      opacity: 0,
+      duration: 0.45,
+      ease: "power2.inOut",
+      delay: 0.15,
+      onComplete: reveal,
+    });
+    return;
+  }
   timeline.add(() => {
     const from = image.getBoundingClientRect();
     const to = target.getBoundingClientRect();

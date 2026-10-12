@@ -970,9 +970,4 @@ html.is-embed .hero {
 
 html.is-embed .hero__content {
   min-height: 100svh;
-  padding-top: 4.5rem;
-}
-
-html.is-embed .hero__mark {
-  display: block;
 }

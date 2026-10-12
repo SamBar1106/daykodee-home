@@ -34,7 +34,13 @@
         var root = document.documentElement;
         root.classList.add("js");
         if (matchMedia("(prefers-reduced-motion: reduce)").matches) root.classList.add("reduce-motion");
-        if (new URLSearchParams(location.search).get("embed") === "1") root.classList.add("is-embed");
+        var framed = false;
+        try {
+          framed = window.self !== window.top;
+        } catch (e) {
+          framed = true;
+        }
+        if (framed || new URLSearchParams(location.search).get("embed") === "1") root.classList.add("is-embed");
         setTimeout(function () {
           if (!document.querySelector("[data-split='1']")) root.classList.add("show-text");
         }, 4500);

@@ -15,7 +15,7 @@ npm run preview
 
 Set `VITE_BASE` to override the base path (include the trailing slash). Example: `VITE_BASE=/ npm run build`.
 
-Open `?embed=1` to hide the preview header. In an iframe the page posts `{ source: "daykodee-home", type: "resize", height }` to the parent so a host page can size the frame. CTA links use the Wix paths `/shop`, `/contact`, `/about`, and `/category/...` with `target="_top"`. When the page is framed, those paths resolve against the parent page URL.
+Open `?embed=1`, or load the page in an iframe, to hide this site's header. The load-time logo still pops in the center, then fades out instead of flying into the header. Shop, category, about, contact, quote, and FAQ links use `target="_top"` and open the Wix pages at `https://goldie13.wixsite.com/my-site/shop`, `/about`, `/contact`, and `/faq`. Standalone viewing keeps the header, the flight into that header, and the relative paths. In an iframe the page also posts `{ source: "daykodee-home", type: "resize", height }` to the parent so a host page can size the frame.
 
 ## Products
 
@@ -23,7 +23,7 @@ The hero shows the bottle, cap, and backpack from `public/models`. The why secti
 
 ## Motion and video
 
-Hero clips play in order with configurable `CUT_POINTS` in `src/config.js`. Two video elements crossfade for 200ms so only one keeps decoding. The next clip preloads while the current one plays. Posters are the first frame. On each load the logo pops in the center and settles into the header once, in about 1.2 seconds, before the first clip plays. Each section below the hero slides, scales, and fades in as one block. `prefers-reduced-motion` shows the first poster and a play button, leaves the logo in the header, and skips Lenis, pins, section entrances, and letter pops.
+Hero clips play in order with configurable `CUT_POINTS` in `src/config.js`. Two video elements crossfade for 200ms so only one keeps decoding. The next clip preloads while the current one plays. Posters are the first frame. On each load the logo pops in the center and settles into the header once, in about 1.2 seconds, before the first clip plays. When the header is hidden, that same pop ends in a fade-out. Each section below the hero slides, scales, and fades in as one block. `prefers-reduced-motion` shows the first poster and a play button, leaves the logo in the header, and skips Lenis, pins, section entrances, and letter pops.
 
 Palette is navy `#00276C`, cream `#EBDFC2`, royal blue `#0A3A9E`, and gold `#D4A017`.
 
