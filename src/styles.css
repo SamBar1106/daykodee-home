@@ -68,7 +68,7 @@
 html {
   color-scheme: only light;
   scroll-behavior: auto;
-  background: var(--navy);
+  background: var(--cream);
 }
 
 body {
@@ -323,14 +323,20 @@ a {
 
 .hero__video {
   opacity: 0;
+  visibility: hidden;
   z-index: 0;
 }
 
-.hero__video.is-active {
+.hero__video.is-active.is-painted,
+.hero__video.is-incoming.is-painted {
+  visibility: visible;
+}
+
+.hero__video.is-active.is-painted {
   opacity: 1;
 }
 
-.hero__video.is-incoming {
+.hero__video.is-incoming.is-painted {
   z-index: 1;
   animation: hero-crossfade 200ms linear forwards;
 }
@@ -442,8 +448,18 @@ html.needs-play .hero__play {
   width: min(1120px, calc(100% - 1.5rem));
   margin-inline: auto;
   aspect-ratio: 2.7 / 1;
-  background: transparent;
+  background: var(--cream);
   overflow: hidden;
+}
+
+.product-fallback {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--cream);
 }
 
 .product-view canvas {
@@ -453,6 +469,15 @@ html.needs-play .hero__play {
   height: 100%;
   display: block;
   pointer-events: none;
+  visibility: hidden;
+}
+
+.product-view.is-live canvas {
+  visibility: visible;
+}
+
+.product-view.is-live .product-fallback {
+  visibility: hidden;
 }
 
 .logo-intro {
@@ -490,10 +515,6 @@ html.reduce-motion .logo-intro {
 .word,
 .word-mask {
   white-space: nowrap;
-}
-
-html.js:not(.show-text):not(.is-embed) .pop {
-  opacity: 0;
 }
 
 html.reduce-motion .pop,
@@ -613,6 +634,14 @@ h2 {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+.card__media video {
+  visibility: hidden;
+}
+
+.card__media video.is-playing {
+  visibility: visible;
 }
 
 .card__border {
@@ -786,6 +815,14 @@ html.motion-pin .step {
   height: 100%;
   object-fit: cover;
   object-position: center center;
+}
+
+.about__video {
+  visibility: hidden;
+}
+
+.about__video.is-painted {
+  visibility: visible;
 }
 
 .about__poster {

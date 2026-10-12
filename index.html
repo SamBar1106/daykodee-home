@@ -20,11 +20,13 @@
       fetchpriority="high"
     />
     <style>
-      html { background: #00276c; }
-      body { margin: 0; background: #ebdfc2; color: #00276c; }
-      html.js:not(.reduce-motion):not(.is-embed):not(.show-text) .section__stage { opacity: 0; }
-      html.js:not(.reduce-motion):not(.show-text) .brand__img,
-      html.js:not(.reduce-motion):not(.show-text) .hero__mark img { opacity: 0; }
+      html, body { background: #ebdfc2; }
+      body { margin: 0; color: #00276c; }
+      .hero { background: #00276c; }
+      .hero__title, .hero__sub, .hero__actions, .section__stage, .pop, h1, h2, h3, p {
+        opacity: 1;
+        visibility: visible;
+      }
       html.show-text .pop,
       html.show-text .section__stage,
       html.show-text .card,
@@ -67,7 +69,7 @@
         if (framed || new URLSearchParams(location.search).get("embed") === "1") root.classList.add("is-embed");
         var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
         if (ios) root.classList.add("is-ios");
-        if (root.classList.contains("is-embed") && ios) root.classList.add("show-text");
+        if (root.classList.contains("is-embed") || ios) root.classList.add("show-text");
         setTimeout(function () {
           root.classList.add("show-text");
         }, 1500);
@@ -97,7 +99,7 @@
     </header>
 
     <main id="main">
-      <section class="hero" aria-labelledby="hero-title">
+      <section class="hero" aria-labelledby="hero-title" style="background:#00276c url('%BASE_URL%media/poster-h1-640.webp') center/cover no-repeat">
         <div class="hero__media">
           <img
             class="hero__poster"
@@ -110,8 +112,8 @@
             fetchpriority="high"
             decoding="sync"
           />
-          <video class="hero__video is-active" muted playsinline preload="none" fetchpriority="low" data-src="%BASE_URL%media/h1-bottles.mp4" aria-hidden="true"></video>
-          <video class="hero__video" muted playsinline preload="none" aria-hidden="true"></video>
+          <video class="hero__video is-active" muted playsinline preload="none" fetchpriority="low" poster="%BASE_URL%media/poster-h1-1280.webp" data-src="%BASE_URL%media/h1-bottles.mp4" aria-hidden="true"></video>
+          <video class="hero__video" muted playsinline preload="none" poster="%BASE_URL%media/poster-h1-1280.webp" aria-hidden="true"></video>
           <div class="hero__overlay"></div>
           <div class="hero__shade"></div>
         </div>
@@ -147,7 +149,9 @@
 
       <section class="section showcase" id="products" aria-label="Branded water bottle, cap, and backpack">
         <div class="section__stage">
-          <div class="product-view" data-products="bottle cap backpack"></div>
+          <div class="product-view" data-products="bottle cap backpack">
+            <img class="product-fallback" src="%BASE_URL%media/products-row.webp" alt="Branded water bottle, cap, and backpack" width="1120" height="415" />
+          </div>
         </div>
       </section>
 
@@ -302,17 +306,16 @@
             <a class="btn btn--gold" href="/about" target="_top" data-wix>Learn About Us<span class="btn__sweep" aria-hidden="true"></span></a>
           </div>
           <div class="about__media">
-            <div class="about__parallax">
+            <div class="about__parallax" style="background:#00276c url('%BASE_URL%media/poster-l1.webp') center/cover no-repeat">
               <img
                 class="about__poster"
                 src="%BASE_URL%media/poster-l1.webp"
                 alt="Children and a teacher smiling in a bright classroom"
                 width="1280"
                 height="720"
-                loading="lazy"
                 decoding="async"
               />
-              <video class="about__video" muted playsinline preload="none" data-src="%BASE_URL%media/l1-classroom.mp4" aria-hidden="true"></video>
+              <video class="about__video" muted playsinline preload="none" poster="%BASE_URL%media/poster-l1.webp" data-src="%BASE_URL%media/l1-classroom.mp4" aria-hidden="true"></video>
             </div>
           </div>
         </div>

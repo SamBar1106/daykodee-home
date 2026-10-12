@@ -44,7 +44,17 @@ export function setupLifestyle() {
       }
       pauseOthers();
       video.play().then(() => {
-        poster?.classList.add("is-gone");
+        const hide = () => {
+          video.classList.add("is-painted");
+          poster?.classList.add("is-gone");
+        };
+        if (typeof video.requestVideoFrameCallback === "function") {
+          video.requestVideoFrameCallback(() => hide());
+        } else {
+          video.addEventListener("timeupdate", () => {
+            if (video.currentTime > 0) hide();
+          }, { once: true });
+        }
       }).catch(() => {});
     },
     { threshold: 0.35 },

@@ -93,7 +93,7 @@ function prepareTemplate(THREE, DecalGeometry, gltf, texture, spec) {
   const mesh = model.getObjectByProperty("isMesh", true);
   const wrapper = new THREE.Group();
   wrapper.add(model);
-  if (mesh) {
+  if (mesh && texture) {
     const decal = buildDecal(THREE, DecalGeometry, mesh, texture, spec);
     if (decal) wrapper.add(decal);
   }
@@ -189,7 +189,7 @@ export function setupProducts() {
 
   if (document.documentElement.classList.contains("is-embed")) {
     boot(views, true).catch(() => {
-      /* The row stays empty if WebGL or a model fails. */
+      /* The static product image stays up if WebGL or a model fails. */
     });
     return;
   }
@@ -202,12 +202,16 @@ export function setupProducts() {
       started = true;
       observer.disconnect();
       boot(views, false).catch(() => {
-        /* Posters stay in place if WebGL or a model fails. */
+        /* The static product image stays up if WebGL or a model fails. */
       });
     },
     { rootMargin: "240px 0px" },
   );
   views.forEach((view) => observer.observe(view));
+}
+
+function isMobile() {
+  return window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
 }
 
 async function boot(views, immediate) {
@@ -216,33 +220,76 @@ async function boot(views, immediate) {
     await whenIdle();
   }
 
+  const mobile = isMobile();
+  const maxRatio = mobile ? 1 : 1.5;
+  let renderer = null;
+  let canvas = null;
+  let blocked = false;
+  const giveUp = () => {
+    blocked = true;
+    views.forEach((view) => view.classList.remove("is-live"));
+    if (canvas) canvas.style.visibility = "hidden";
+    if (renderer) renderer.setAnimationLoop(null);
+  };
+  const timer = window.setTimeout(() => {
+    if (!views.some((view) => view.classList.contains("is-live"))) giveUp();
+  }, 4000);
+
+  const makeRenderer = (THREE, lowPower) => {
+    try {
+      const next = new THREE.WebGLRenderer({
+        antialias: !mobile,
+        alpha: true,
+        powerPreference: lowPower ? "low-power" : "high-performance",
+        failIfMajorPerformanceCaveat: false,
+      });
+      if (next.getContext()) return next;
+      next.dispose();
+    } catch {
+      /* Try the other power preference before giving up. */
+    }
+    return null;
+  };
+
+  try {
   const THREE = await import("three");
+  if (blocked) return;
   const { GLTFLoader } = await import("three/addons/loaders/GLTFLoader.js");
   const { MeshoptDecoder } = await import("three/addons/libs/meshopt_decoder.module.js");
   const { DecalGeometry } = await import("three/addons/geometries/DecalGeometry.js");
+  if (blocked) return;
 
   const reduce = window.matchMedia(REDUCE).matches;
-  const fine = window.matchMedia(FINE).matches;
+  const fine = window.matchMedia(FINE).matches && !mobile;
 
   const host = views[0];
-  const renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    alpha: true,
-    powerPreference: "high-performance",
-  });
+  renderer = makeRenderer(THREE, mobile) || makeRenderer(THREE, !mobile);
+  if (!renderer) {
+    giveUp();
+    return;
+  }
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.setClearColor(0x000000, 0);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
-  const canvas = renderer.domElement;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxRatio));
+  canvas = renderer.domElement;
   canvas.setAttribute("aria-hidden", "true");
+  canvas.style.visibility = "hidden";
   host.appendChild(canvas);
+  canvas.addEventListener("webglcontextlost", (event) => {
+    event.preventDefault();
+    giveUp();
+  });
 
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
-  const texture = await new THREE.TextureLoader().loadAsync(modelUrl("logo-decal.png"));
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-  texture.premultiplyAlpha = false;
+  const texture = mobile
+    ? null
+    : await new THREE.TextureLoader().loadAsync(modelUrl("logo-decal.png"));
+  if (texture) {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+    texture.premultiplyAlpha = false;
+  }
 
   const needed = new Set(views.flatMap((view) => (view.dataset.products || ORDER.join(" ")).split(/\s+/)));
   const templates = new Map();
@@ -252,6 +299,7 @@ async function boot(views, immediate) {
       templates.set(name, prepareTemplate(THREE, DecalGeometry, gltf, texture, PLACEMENTS[name]));
     }),
   );
+  if (blocked) return;
 
   const scenes = views.map((view) => {
     const names = (view.dataset.products || ORDER.join(" ")).split(/\s+/).filter((name) => templates.has(name));
@@ -297,7 +345,7 @@ async function boot(views, immediate) {
     const rect = host.getBoundingClientRect();
     const width = Math.max(1, Math.round(rect.width));
     const height = Math.max(1, Math.round(rect.height));
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxRatio));
     renderer.setSize(width, height, false);
   };
   resize();
@@ -311,6 +359,7 @@ async function boot(views, immediate) {
       if (entry.isIntersecting) visible.add(entry.target);
       else visible.delete(entry.target);
     });
+    if (blocked || !renderer) return;
     if (visible.size && !running) {
       running = true;
       renderer.setAnimationLoop(frame);
@@ -319,7 +368,38 @@ async function boot(views, immediate) {
   views.forEach((view) => watch.observe(view));
 
   const clock = new THREE.Clock();
+  const pixel = new Uint8Array(4);
+  function frameHasProducts() {
+    const gl = renderer.getContext();
+    if (!gl || gl.isContextLost()) return false;
+    const w = gl.drawingBufferWidth;
+    const h = gl.drawingBufferHeight;
+    if (w < 2 || h < 2) return false;
+    const samples = [];
+    for (const [px, py] of [[0.18, 0.5], [0.5, 0.5], [0.82, 0.5], [0.32, 0.38], [0.68, 0.38], [0.5, 0.7]]) {
+      gl.readPixels(
+        Math.min(w - 1, Math.floor(px * w)),
+        Math.min(h - 1, Math.floor(py * h)),
+        1,
+        1,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        pixel,
+      );
+      if (pixel[3] > 12) samples.push([pixel[0], pixel[1], pixel[2]]);
+    }
+    if (samples.length < 2) return false;
+    const span = [0, 1, 2].reduce((sum, channel) => {
+      const values = samples.map((sample) => sample[channel]);
+      return sum + Math.max(...values) - Math.min(...values);
+    }, 0);
+    return span > 18;
+  }
   function frame() {
+    if (blocked) {
+      giveUp();
+      return;
+    }
     if (!visible.size || document.hidden) {
       if (!visible.size) {
         running = false;
@@ -364,7 +444,16 @@ async function boot(views, immediate) {
       const aspect = canvas.width / Math.max(canvas.height, 1);
       frameCamera(item.camera, item.bounds.contentW, item.bounds.contentH, item.bounds.nearZ, item.bounds.lookY, aspect);
       renderer.render(item.scene, item.camera);
-      item.view.dataset.ready = "1";
+      if (!blocked && !item.view.classList.contains("is-live") && frameHasProducts()) {
+        item.view.classList.add("is-live");
+        item.view.dataset.ready = "1";
+        canvas.style.visibility = "visible";
+        window.clearTimeout(timer);
+      }
     }
+  }
+  if (blocked) giveUp();
+  } catch {
+    giveUp();
   }
 }
