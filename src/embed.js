@@ -53,10 +53,45 @@ export function setupEmbed() {
 
   if (!embed) return;
 
-  const send = () => {
+  let fitting = false;
+
+  /** Natural content height, ignoring any fill added to the closing section. */
+  const measureContent = () => {
     const main = document.getElementById("main");
-    const bottom = main ? main.getBoundingClientRect().bottom + window.scrollY : document.documentElement.scrollHeight;
-    const height = Math.ceil(bottom);
+    if (!main) return document.documentElement.scrollHeight;
+    return main.getBoundingClientRect().bottom + window.scrollY;
+  };
+
+  /**
+   * Wix can leave the iframe taller than this page, and a fixed posted height
+   * does not survive its mobile width scale. Stretch only the last section to
+   * cover that gap. A shorter iframe keeps the natural height, so this never
+   * adds a scrollbar.
+   */
+  const fitLastSection = () => {
+    const section = document.getElementById("ready");
+    if (!section) return Math.ceil(measureContent());
+
+    fitting = true;
+    section.style.minHeight = "";
+    const natural = measureContent();
+    const extra = window.innerHeight - natural;
+    if (extra > 0.5) {
+      const sectionHeight = section.getBoundingClientRect().height;
+      section.style.minHeight = `${sectionHeight + extra}px`;
+      const overflow = document.documentElement.scrollHeight - window.innerHeight;
+      if (overflow > 0) {
+        section.style.minHeight = `${Math.max(sectionHeight, section.getBoundingClientRect().height - overflow)}px`;
+      }
+    }
+    requestAnimationFrame(() => {
+      fitting = false;
+    });
+    return Math.ceil(natural);
+  };
+
+  const send = () => {
+    const height = fitLastSection();
     window.parent.postMessage({ type: "daykodee-height", height }, "*");
     if (framed) {
       window.parent.postMessage({ source: "daykodee-home", type: "resize", height }, "*");
@@ -67,7 +102,10 @@ export function setupEmbed() {
   window.addEventListener("load", send);
   window.addEventListener("resize", send);
   if ("ResizeObserver" in window) {
-    const observer = new ResizeObserver(send);
+    const observer = new ResizeObserver(() => {
+      if (fitting) return;
+      send();
+    });
     observer.observe(document.documentElement);
   }
 }

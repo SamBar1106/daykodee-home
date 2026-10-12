@@ -1026,6 +1026,18 @@ html.is-embed .hero__content {
   max-height: 640px;
 }
 
+html.is-embed #ready {
+  display: flex;
+  flex-direction: column;
+}
+
+html.is-embed #ready > .section__stage {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 @media (min-width: 768px) {
   html.is-embed .hero,
   html.is-embed .hero__content {
