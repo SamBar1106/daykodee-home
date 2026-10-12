@@ -1,4 +1,3 @@
-import gsap from "gsap";
 import { CUT_POINTS, HERO_CLIPS, MEDIA } from "./config.js";
 
 const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -26,8 +25,6 @@ function waitFor(target, event) {
 export function setupHero({ onCut, introDone, beatsReady }) {
   const root = document.querySelector(".hero");
   const poster = root?.querySelector(".hero__poster");
-  const flash = root?.querySelector(".hero__flash");
-  const stamp = root?.querySelector(".logo-stamp");
   const playButton = root?.querySelector(".hero__play");
   const videos = [...(root?.querySelectorAll(".hero__video") ?? [])];
   if (!root || videos.length < 2) return;
@@ -42,8 +39,6 @@ export function setupHero({ onCut, introDone, beatsReady }) {
   let heroInView = true;
   let rafId = 0;
   let errors = 0;
-
-  gsap.set(stamp, { xPercent: -50, yPercent: -50, scale: 0.4, opacity: 0 });
 
   const activeVideo = () => videos[activeSlot];
   const hiddenVideo = () => videos[1 - activeSlot];
@@ -69,29 +64,6 @@ export function setupHero({ onCut, introDone, beatsReady }) {
     video.preload = "auto";
     video.src = `${MEDIA}${clip.file}`;
     video.load();
-  }
-
-  function flashColor(color) {
-    if (!flash || reduceMotion()) return;
-    flash.style.background = color;
-    gsap.fromTo(flash, { opacity: 1 }, { opacity: 0, duration: 0.12, ease: "none", overwrite: "auto" });
-  }
-
-  function landStamp() {
-    if (!stamp || reduceMotion()) return;
-    gsap.killTweensOf(stamp);
-    gsap.fromTo(
-      stamp,
-      { xPercent: -50, yPercent: -50, scale: 0.35, opacity: 0 },
-      { xPercent: -50, yPercent: -50, scale: 1, opacity: 1, duration: 0.28, ease: "back.out(2.6)" },
-    );
-    gsap.to(stamp, {
-      opacity: 0,
-      scale: 1.12,
-      duration: 0.25,
-      delay: 0.4,
-      ease: "power2.in",
-    });
   }
 
   function pauseOthers(current) {
@@ -132,8 +104,6 @@ export function setupHero({ onCut, introDone, beatsReady }) {
     }
 
     const nextColor = HERO_CLIPS[nextIndex].color;
-    flashColor(nextColor);
-    landStamp();
     onCut?.({ advance: true, color: nextColor });
 
     try {
@@ -145,9 +115,7 @@ export function setupHero({ onCut, introDone, beatsReady }) {
       return;
     }
 
-    incoming.classList.add("is-active");
-    outgoing.classList.remove("is-active");
-    outgoing.pause();
+    await crossfade(incoming, outgoing);
     hidePoster();
     clipIndex = nextIndex;
     activeSlot = 1 - activeSlot;
@@ -157,10 +125,33 @@ export function setupHero({ onCut, introDone, beatsReady }) {
     advancing = false;
   }
 
+  function crossfade(incoming, outgoing) {
+    if (reduceMotion()) {
+      incoming.classList.add("is-active");
+      outgoing.classList.remove("is-active");
+      outgoing.pause();
+      return Promise.resolve();
+    }
+    incoming.classList.add("is-incoming");
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        incoming.removeEventListener("animationend", finish);
+        incoming.classList.add("is-active");
+        incoming.classList.remove("is-incoming");
+        outgoing.classList.remove("is-active");
+        outgoing.pause();
+        resolve();
+      };
+      incoming.addEventListener("animationend", finish);
+      window.setTimeout(finish, 200);
+    });
+  }
+
   function beatOnly() {
-    const color = HERO_CLIPS[clipIndex].color;
-    flashColor(color);
-    onCut?.({ advance: false, color });
+    onCut?.({ advance: false, color: HERO_CLIPS[clipIndex].color });
   }
 
   function tick() {

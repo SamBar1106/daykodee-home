@@ -44,66 +44,28 @@ function splitHeading(element, { chars, stagger, play }) {
   return { split, targets, tween };
 }
 
-function setupWipes(timed) {
-  document.querySelectorAll(".wipe").forEach((wipe) => {
-    const layers = [...wipe.querySelectorAll(".wipe__layer")];
-    const logo = wipe.querySelector(".wipe__logo");
-    const enter = timed ? 0.4 : 0.5;
-    const timeline = gsap.timeline({ paused: true });
-
-    layers.forEach((layer, index) => {
-      const at = index * 0.08;
-      timeline.fromTo(
-        layer,
-        { clipPath: "inset(0 100% 0 0)" },
-        { clipPath: "inset(0 0% 0 0)", duration: enter, ease: "power4.inOut" },
-        at,
-      );
-      timeline.to(
-        layer,
-        { clipPath: "inset(0 0% 0 100%)", duration: enter, ease: "power4.inOut" },
-        at + enter,
-      );
-    });
-
-    if (logo) {
-      const host = logo.closest(".wipe__layer");
-      const hostIndex = Math.max(0, layers.indexOf(host));
-      const at = hostIndex * 0.08 + enter * 0.3;
-      timeline.fromTo(
-        logo,
-        { scale: 0.55, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.35, ease: "back.out(2.2)" },
-        at,
-      );
-      timeline.to(logo, { opacity: 0, duration: 0.2, ease: "power2.in" }, at + enter * 0.7);
-    }
-
-    if (timed) {
-      const next = wipe.nextElementSibling;
-      ScrollTrigger.create({
-        trigger: next || wipe,
-        start: "top 70%",
-        once: true,
-        onEnter: () => {
-          wipe.classList.add("is-playing");
-          timeline.play(0);
+function setupSectionEntrances() {
+  document.querySelectorAll("main > section.section").forEach((section) => {
+    const stage = section.querySelector(":scope > .section__stage");
+    if (!stage) return;
+    gsap.fromTo(
+      stage,
+      { y: 80, scale: 0.96, opacity: 0 },
+      {
+        y: 0,
+        scale: 1,
+        opacity: 1,
+        duration: 0.7,
+        ease: "power3.out",
+        immediateRender: false,
+        scrollTrigger: {
+          trigger: section,
+          start: "top 85%",
+          once: true,
+          toggleActions: "play none none none",
         },
-      });
-      timeline.eventCallback("onComplete", () => {
-        wipe.classList.remove("is-playing");
-      });
-      return;
-    }
-
-    const trigger = ScrollTrigger.create({
-      trigger: wipe,
-      start: "top 70%",
-      end: "bottom bottom",
-      scrub: 0.4,
-      animation: timeline,
-    });
-    wipe._dkWipe = trigger;
+      },
+    );
   });
 }
 
@@ -279,40 +241,6 @@ function setupLenis() {
   };
 }
 
-function flyLogo(intro, introDone) {
-  const image = intro.querySelector("img");
-  const embed = document.documentElement.classList.contains("is-embed");
-  const target = document.querySelector(embed ? ".hero__mark img" : ".brand__img");
-  if (!image || !target) {
-    intro.remove();
-    introDone.resolve();
-    return;
-  }
-
-  gsap.set(image, { scale: 0.4, opacity: 0 });
-  const timeline = gsap.timeline();
-  timeline.to(image, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2.2)" });
-  timeline.add(() => {
-    const from = image.getBoundingClientRect();
-    const to = target.getBoundingClientRect();
-    const dx = to.left + to.width / 2 - (from.left + from.width / 2);
-    const dy = to.top + to.height / 2 - (from.top + from.height / 2);
-    const scale = to.width > 0 && from.width > 0 ? to.width / from.width : 0.25;
-    gsap.to(image, {
-      x: dx,
-      y: dy,
-      scale,
-      duration: 0.55,
-      ease: "power3.inOut",
-      onComplete: () => {
-        gsap.set(target, { opacity: 1 });
-        intro.remove();
-        introDone.resolve();
-      },
-    });
-  });
-}
-
 export async function setupMotion() {
   const introDone = deferred();
   const beatsReady = deferred();
@@ -353,7 +281,7 @@ export async function setupMotion() {
     (context) => {
       const { reduce, phone, tablet, desktop } = context.conditions;
       h1Targets = [];
-      document.documentElement.classList.remove("motion-pin", "motion-wipes");
+      document.documentElement.classList.remove("motion-pin");
 
       document.documentElement.dataset.motion = "1";
 
@@ -362,14 +290,11 @@ export async function setupMotion() {
         document.querySelectorAll(".pop").forEach((el) => {
           el.dataset.split = "1";
         });
-        gsap.set(".brand__img, .hero__mark img", { opacity: 1 });
-        document.querySelector(".logo-intro")?.remove();
         introDone.resolve();
         beatsReady.resolve();
         return undefined;
       }
 
-      document.documentElement.classList.add("motion-wipes");
       const cleanups = [];
       if (desktop) cleanups.push(setupLenis());
 
@@ -414,13 +339,7 @@ export async function setupMotion() {
         });
       });
 
-      const intro = document.querySelector(".logo-intro");
-      if (intro) {
-        flyLogo(intro, introDone);
-      } else {
-        gsap.set(".brand__img, .hero__mark img", { opacity: 1 });
-        introDone.resolve();
-      }
+      introDone.resolve();
 
       if (h1Tween) {
         introDone.promise.then(() => {
@@ -428,7 +347,7 @@ export async function setupMotion() {
         });
       }
 
-      setupWipes(Boolean(phone));
+      setupSectionEntrances();
       if (!phone) setupPin(desktop ? 150 : tablet ? 100 : 100);
       setupCards();
       setupPoints();
@@ -436,7 +355,7 @@ export async function setupMotion() {
       setupParallax();
 
       return () => {
-        document.documentElement.classList.remove("motion-pin", "motion-wipes");
+        document.documentElement.classList.remove("motion-pin");
         cleanups.forEach((fn) => fn && fn());
       };
     },

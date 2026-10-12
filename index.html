@@ -22,6 +22,7 @@
     <style>
       html { background: #00276c; }
       body { margin: 0; background: #ebdfc2; color: #00276c; }
+      html.js:not(.reduce-motion) .section__stage { opacity: 0; }
     </style>
     <script>
       (function () {
@@ -75,13 +76,6 @@
           <video class="hero__video" muted playsinline preload="none" aria-hidden="true"></video>
           <div class="hero__overlay"></div>
           <div class="hero__shade"></div>
-          <div class="hero__flash" aria-hidden="true"></div>
-          <div class="logo-stamp" aria-hidden="true">
-            <img src="%BASE_URL%media/logo.webp" alt="" width="720" height="473" />
-          </div>
-        </div>
-        <div class="logo-intro" aria-hidden="true">
-          <img src="%BASE_URL%media/logo.webp" alt="" width="720" height="473" />
         </div>
         <a class="hero__mark" href="#main">
           <img src="%BASE_URL%media/logo.webp" alt="Daykodee" width="720" height="473" />
@@ -124,18 +118,8 @@
         })();
       </script>
 
-      <div class="wipe" data-wipe="hero" aria-hidden="true">
-        <div class="wipe__sticky">
-          <div class="wipe__layer" data-color="navy"></div>
-          <div class="wipe__layer" data-color="royal"></div>
-          <div class="wipe__layer" data-color="gold">
-            <img class="wipe__logo" src="%BASE_URL%media/logo.webp" alt="" width="720" height="473" />
-          </div>
-          <div class="wipe__layer" data-color="cream"></div>
-        </div>
-      </div>
-
       <section class="section categories" id="categories" aria-labelledby="categories-title">
+        <div class="section__stage">
         <div class="wrap">
           <h2 class="pop" id="categories-title">Shop by Category</h2>
           <p class="section__intro">Everyday items your families will use and your kids will love, all ready to carry your center's name.</p>
@@ -217,19 +201,11 @@
             </article>
           </div>
         </div>
+        </div>
       </section>
 
-      <div class="wipe" data-wipe="categories" aria-hidden="true">
-        <div class="wipe__sticky">
-          <div class="wipe__layer" data-color="cream"></div>
-          <div class="wipe__layer" data-color="gold">
-            <img class="wipe__logo" src="%BASE_URL%media/logo.webp" alt="" width="720" height="473" />
-          </div>
-          <div class="wipe__layer" data-color="royal"></div>
-        </div>
-      </div>
-
       <section class="section ordering" id="ordering" aria-labelledby="ordering-title">
+        <div class="section__stage">
         <div class="wrap">
           <div class="ordering__head">
             <h2 class="pop" id="ordering-title">How Ordering Works</h2>
@@ -254,9 +230,11 @@
           </ol>
           <a class="btn btn--gold" href="/shop" target="_top" data-wix>Start an Order<span class="btn__sweep" aria-hidden="true"></span></a>
         </div>
+        </div>
       </section>
 
       <section class="section why" id="why" aria-labelledby="why-title">
+        <div class="section__stage">
         <div class="wrap why__grid">
           <div>
             <h2 class="pop" id="why-title">Why Centers Order from Daykodee</h2>
@@ -313,18 +291,11 @@
             </div>
           </div>
         </div>
+        </div>
       </section>
 
-      <div class="wipe" data-wipe="why" aria-hidden="true">
-        <div class="wipe__sticky">
-          <div class="wipe__layer" data-color="cream">
-            <img class="wipe__logo" src="%BASE_URL%media/logo.webp" alt="" width="720" height="473" />
-          </div>
-          <div class="wipe__layer" data-color="navy"></div>
-        </div>
-      </div>
-
       <section class="section about" id="about" aria-labelledby="about-title">
+        <div class="section__stage">
         <div class="wrap about__grid">
           <div class="about__copy">
             <h2 class="pop" id="about-title">Part of the Family Affair Family</h2>
@@ -346,11 +317,13 @@
             </div>
           </div>
         </div>
+        </div>
       </section>
 
       <!-- Testimonials stay hidden until real, approved quotes exist. -->
 
       <section class="section cta" id="ready" aria-labelledby="ready-title">
+        <div class="section__stage">
         <div class="cta__blocks" aria-hidden="true">
           <span class="cta__block cta__block--a"></span>
           <span class="cta__block cta__block--b"></span>
@@ -363,6 +336,7 @@
             <a class="btn btn--primary" href="/shop" target="_top" data-wix>Shop Products<span class="btn__sweep" aria-hidden="true"></span></a>
             <a class="btn btn--gold" href="/contact" target="_top" data-wix>Contact Us<span class="btn__sweep" aria-hidden="true"></span></a>
           </div>
+        </div>
         </div>
       </section>
     </main>

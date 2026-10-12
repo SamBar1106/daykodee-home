@@ -7,8 +7,8 @@ export const SPLINE_SCENE_URL = "";
 
 /**
  * Beat times, in seconds, inside each hero clip.
- * Every time is a color flash and an H1 bounce.
- * The last time hard-cuts to the next clip (and lands the logo stamp).
+ * Every time bounces the H1.
+ * The last time crossfades to the next clip (200ms, no color panel).
  * Use [] to play each clip through to the end, then cut.
  */
 export const CUT_POINTS = [1.25, 2.5, 3.75, 5];

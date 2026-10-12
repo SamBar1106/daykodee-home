@@ -174,10 +174,7 @@ a {
 }
 
 .brand__img,
-.hero__mark img,
-.logo-intro img,
-.logo-stamp img,
-.wipe__logo {
+.hero__mark img {
   height: auto;
 }
 
@@ -311,8 +308,7 @@ a {
 .hero__poster,
 .hero__video,
 .hero__overlay,
-.hero__shade,
-.hero__flash {
+.hero__shade {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -334,6 +330,20 @@ a {
   opacity: 1;
 }
 
+.hero__video.is-incoming {
+  z-index: 1;
+  animation: hero-crossfade 200ms linear forwards;
+}
+
+@keyframes hero-crossfade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .hero__poster {
   z-index: 1;
   transition: opacity 0.25s linear;
@@ -351,27 +361,6 @@ a {
 .hero__shade {
   z-index: 2;
   background: linear-gradient(180deg, rgba(0, 39, 108, 0.28) 0%, rgba(0, 39, 108, 0.72) 58%, rgba(0, 39, 108, 0.92) 100%);
-}
-
-.hero__flash {
-  z-index: 3;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.logo-stamp {
-  position: absolute;
-  z-index: 3;
-  left: 50%;
-  top: 46%;
-  width: min(42vw, 180px);
-  pointer-events: none;
-  opacity: 0;
-}
-
-.logo-stamp img {
-  width: 100%;
-  height: auto;
 }
 
 .hero__content {
@@ -485,19 +474,6 @@ html.needs-play .hero__play {
   display: none;
 }
 
-.logo-intro {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-}
-
-.logo-intro img {
-  width: min(68vw, 300px);
-}
-
 .char,
 .word,
 .char-mask,
@@ -515,69 +491,23 @@ html.needs-play .hero__play {
   opacity: 0;
 }
 
-.js .brand__img,
-.js .hero__mark img {
-  opacity: 0;
-}
-
 html.reduce-motion .pop,
-html.reduce-motion .brand__img,
-html.reduce-motion .hero__mark img,
 html.show-text .pop,
-html.show-text .brand__img,
-html.show-text .hero__mark img {
+html.js.show-text .section__stage {
   opacity: 1;
 }
 
-html.reduce-motion .logo-intro {
-  display: none;
-}
-
-.wipe {
-  position: relative;
-  height: 0;
-}
-
-.wipe__sticky {
-  position: absolute;
-  width: 100%;
-  height: 100vh;
-  height: 100svh;
-  overflow: hidden;
-  pointer-events: none;
-  visibility: hidden;
-}
-
-.wipe__layer {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  clip-path: inset(0 100% 0 0);
-}
-
-.wipe__layer[data-color="navy"] {
-  background: var(--navy);
-}
-
-.wipe__layer[data-color="royal"] {
-  background: var(--royal);
-}
-
-.wipe__layer[data-color="gold"] {
-  background: var(--gold);
-}
-
-.wipe__layer[data-color="cream"] {
-  background: var(--cream);
-}
-
-.wipe__logo {
-  width: min(46vw, 230px);
+html.js.show-text .section__stage {
+  transform: none;
 }
 
 .section {
+  overflow: hidden;
+}
+
+.section__stage {
   padding: clamp(3.2rem, 8vw, 6rem) 0;
+  transform-origin: center center;
 }
 
 .section__intro {
@@ -596,8 +526,11 @@ h2 {
 }
 
 .categories {
-  background: var(--cream);
   color: var(--navy);
+}
+
+.categories .section__stage {
+  background: var(--cream);
 }
 
 .cards {
@@ -665,8 +598,11 @@ h2 {
 }
 
 .ordering {
-  background: var(--royal);
   color: var(--cream);
+}
+
+.ordering .section__stage {
+  background: var(--royal);
 }
 
 .ordering__head {
@@ -720,8 +656,11 @@ html.motion-pin .step {
 }
 
 .why {
-  background: var(--cream);
   color: var(--navy);
+}
+
+.why .section__stage {
+  background: var(--cream);
 }
 
 .why__list {
@@ -772,8 +711,11 @@ html.motion-pin .step {
 }
 
 .about {
-  background: var(--navy);
   color: var(--cream);
+}
+
+.about .section__stage {
+  background: var(--navy);
 }
 
 .about__media {
@@ -821,11 +763,14 @@ html.motion-pin .step {
 }
 
 .cta {
+  color: var(--cream);
+  text-align: center;
+}
+
+.cta .section__stage {
   position: relative;
   overflow: hidden;
   background: var(--royal);
-  color: var(--cream);
-  text-align: center;
 }
 
 .cta__blocks {
@@ -961,18 +906,6 @@ html.motion-pin .step {
     margin-top: 0;
   }
 
-  html.motion-wipes .wipe {
-    height: 120vh;
-  }
-
-  html.motion-wipes .wipe__sticky {
-    position: fixed;
-    inset: 0;
-    z-index: 25;
-    height: 100vh;
-    height: 100svh;
-    visibility: visible;
-  }
 }
 
 @media (min-width: 1100px) {
@@ -994,13 +927,6 @@ html.motion-pin .step {
 }
 
 @media (max-width: 767px) {
-  .wipe.is-playing .wipe__sticky {
-    position: fixed;
-    inset: 0;
-    z-index: 35;
-    visibility: visible;
-  }
-
   .header-cta {
     padding-inline: 0.7rem;
     font-size: 0.78rem;
@@ -1010,8 +936,10 @@ html.motion-pin .step {
 @media (prefers-reduced-motion: reduce) {
   .hero__poster,
   .about__poster,
-  .brand__img {
+  .brand__img,
+  .hero__video.is-incoming {
     transition: none;
+    animation: none;
   }
 
   .site-header,

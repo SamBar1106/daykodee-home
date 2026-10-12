@@ -23,7 +23,7 @@ Set `SPLINE_SCENE_URL` in `src/config.js`, or set `data-spline-url` on a `.splin
 
 ## Motion and video
 
-Hero clips play in order with configurable `CUT_POINTS` in `src/config.js`. Two video elements swap so only one is playing. The next clip preloads while the current one plays. Posters are the first frame. `prefers-reduced-motion` shows the first poster and a play button, and skips Lenis, pins, wipes, and letter pops.
+Hero clips play in order with configurable `CUT_POINTS` in `src/config.js`. Two video elements crossfade for 200ms so only one keeps decoding. The next clip preloads while the current one plays. Posters are the first frame. Each section below the hero slides, scales, and fades in as one block. `prefers-reduced-motion` shows the first poster and a play button, and skips Lenis, pins, section entrances, and letter pops.
 
 Palette is navy `#00276C`, cream `#EBDFC2`, royal blue `#0A3A9E`, and gold `#D4A017`.
 
