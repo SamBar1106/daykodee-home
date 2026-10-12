@@ -187,6 +187,13 @@ export function setupProducts() {
   const views = [...document.querySelectorAll(".product-view")];
   if (!views.length) return;
 
+  if (document.documentElement.classList.contains("is-embed")) {
+    boot(views, true).catch(() => {
+      /* The row stays empty if WebGL or a model fails. */
+    });
+    return;
+  }
+
   let started = false;
   const observer = new IntersectionObserver(
     (entries) => {
@@ -194,7 +201,7 @@ export function setupProducts() {
       if (!entries.some((entry) => entry.isIntersecting)) return;
       started = true;
       observer.disconnect();
-      boot(views).catch(() => {
+        boot(views, false).catch(() => {
         /* Posters stay in place if WebGL or a model fails. */
       });
     },
@@ -203,9 +210,11 @@ export function setupProducts() {
   views.forEach((view) => observer.observe(view));
 }
 
-async function boot(views) {
-  await afterFirstPaint();
-  await whenIdle();
+async function boot(views, immediate) {
+  if (!immediate) {
+    await afterFirstPaint();
+    await whenIdle();
+  }
 
   const THREE = await import("three");
   const { GLTFLoader } = await import("three/addons/loaders/GLTFLoader.js");

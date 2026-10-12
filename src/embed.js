@@ -51,15 +51,21 @@ export function setupEmbed() {
     });
   }
 
-  if (!framed) return;
+  if (!embed) return;
 
   const send = () => {
-    const height = Math.ceil(document.documentElement.scrollHeight);
-    window.parent.postMessage({ source: "daykodee-home", type: "resize", height }, "*");
+    const main = document.getElementById("main");
+    const bottom = main ? main.getBoundingClientRect().bottom + window.scrollY : document.documentElement.scrollHeight;
+    const height = Math.ceil(bottom);
+    window.parent.postMessage({ type: "daykodee-height", height }, "*");
+    if (framed) {
+      window.parent.postMessage({ source: "daykodee-home", type: "resize", height }, "*");
+    }
   };
 
   send();
   window.addEventListener("load", send);
+  window.addEventListener("resize", send);
   if ("ResizeObserver" in window) {
     const observer = new ResizeObserver(send);
     observer.observe(document.documentElement);

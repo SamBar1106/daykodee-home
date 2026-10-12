@@ -44,6 +44,10 @@ function splitHeading(element, { chars, stagger, play }) {
   return { split, targets, tween };
 }
 
+function isEmbed() {
+  return document.documentElement.classList.contains("is-embed");
+}
+
 function setupSectionEntrances() {
   document.querySelectorAll("main > section.section").forEach((section) => {
     const stage = section.querySelector(":scope > .section__stage");
@@ -164,6 +168,46 @@ function setupParallax() {
       end: "bottom top",
       scrub: true,
     },
+  });
+}
+
+/** The parent page scrolls, so embed reveals play on load instead of on scroll. */
+function setupEmbedReveals() {
+  document.querySelectorAll("main > section.section").forEach((section) => {
+    const stage = section.querySelector(":scope > .section__stage");
+    if (!stage) return;
+    gsap.fromTo(
+      stage,
+      { y: 40, scale: 0.98, opacity: 0 },
+      { y: 0, scale: 1, opacity: 1, duration: 0.7, ease: "power3.out", immediateRender: false },
+    );
+  });
+
+  gsap.from(".card", {
+    y: 24,
+    scale: 0.96,
+    duration: 0.7,
+    ease: "power3.out",
+    stagger: 0.06,
+    immediateRender: false,
+  });
+
+  gsap.from(".why__item", {
+    y: 16,
+    opacity: 0,
+    duration: 0.45,
+    ease: "power2.out",
+    stagger: 0.06,
+    immediateRender: false,
+  });
+
+  gsap.from("#ready .btn", {
+    y: 16,
+    opacity: 0,
+    duration: 0.45,
+    ease: "power2.out",
+    stagger: 0.06,
+    immediateRender: false,
   });
 }
 
@@ -359,8 +403,9 @@ export async function setupMotion() {
         return undefined;
       }
 
+      const embed = isEmbed();
       const cleanups = [];
-      if (desktop) cleanups.push(setupLenis());
+      if (desktop && !embed) cleanups.push(setupLenis());
 
       const h1 = document.querySelector(".hero__title");
       let h1Tween;
@@ -384,23 +429,27 @@ export async function setupMotion() {
       }
 
       document.querySelectorAll("h2.pop").forEach((heading) => {
-        const popped = splitHeading(heading, { chars: true, stagger: 0.02, play: false });
-        ScrollTrigger.create({
-          trigger: heading,
-          start: "top 80%",
-          once: true,
-          onEnter: () => popped.tween.play(),
-        });
+        const popped = splitHeading(heading, { chars: true, stagger: 0.02, play: embed });
+        if (!embed) {
+          ScrollTrigger.create({
+            trigger: heading,
+            start: "top 80%",
+            once: true,
+            onEnter: () => popped.tween.play(),
+          });
+        }
       });
 
       document.querySelectorAll(".step__num").forEach((number) => {
-        const popped = splitHeading(number, { chars: true, stagger: 0.03, play: false });
-        ScrollTrigger.create({
-          trigger: "#ordering",
-          start: "top 75%",
-          once: true,
-          onEnter: () => popped.tween.play(),
-        });
+        const popped = splitHeading(number, { chars: true, stagger: 0.03, play: embed });
+        if (!embed) {
+          ScrollTrigger.create({
+            trigger: "#ordering",
+            start: "top 75%",
+            once: true,
+            onEnter: () => popped.tween.play(),
+          });
+        }
       });
 
       if (h1Tween) {
@@ -409,12 +458,16 @@ export async function setupMotion() {
         });
       }
 
-      setupSectionEntrances();
-      if (!phone) setupPin(desktop ? 150 : tablet ? 100 : 100);
-      setupCards();
-      setupPoints();
-      setupCtaButtons();
-      setupParallax();
+      if (embed) {
+        setupEmbedReveals();
+      } else {
+        setupSectionEntrances();
+        if (!phone) setupPin(desktop ? 150 : tablet ? 100 : 100);
+        setupCards();
+        setupPoints();
+        setupCtaButtons();
+        setupParallax();
+      }
 
       return () => {
         document.documentElement.classList.remove("motion-pin");

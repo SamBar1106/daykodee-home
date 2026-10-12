@@ -28,6 +28,13 @@
       .logo-intro { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; pointer-events: none; }
       html.reduce-motion .logo-intro { display: none; }
       html.js:not(.reduce-motion) .logo-intro img { width: min(68vw, 300px); height: auto; opacity: 0; }
+      html.is-embed .logo-intro { position: absolute; }
+      html.is-embed .hero,
+      html.is-embed .hero__content { height: 640px; min-height: 0; max-height: 640px; }
+      @media (min-width: 768px) {
+        html.is-embed .hero,
+        html.is-embed .hero__content { height: 720px; max-height: 720px; }
+      }
     </style>
     <script>
       (function () {
