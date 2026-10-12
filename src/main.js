@@ -5,10 +5,12 @@ import { setupMotion } from "./motion.js";
 import { setupHero } from "./hero.js";
 import { setupLifestyle } from "./lifestyle.js";
 import { setupProducts } from "./products.js";
+import { setupCategoryVideos } from "./categories.js";
 
 setupEmbed();
 setupNav();
 setupLifestyle();
+setupCategoryVideos();
 
 const motion = setupMotion();
 motion.then((api) => {

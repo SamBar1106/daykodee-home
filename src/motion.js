@@ -73,6 +73,68 @@ function setupSectionEntrances() {
   });
 }
 
+function playStep(step, delay = 0) {
+  if (!step || step.dataset.played === "1") return;
+  step.dataset.played = "1";
+  const number = step.querySelector(".step__num");
+  const copy = step.querySelectorAll("h3, p");
+  const target = Number(number?.textContent.trim()) || 0;
+  if (number) number.dataset.split = "1";
+  const proxy = { n: 0 };
+  const timeline = gsap.timeline({ delay });
+  if (number) {
+    timeline.fromTo(
+      number,
+      { scale: 0.55, opacity: 0 },
+      { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" },
+      0,
+    );
+    timeline.to(
+      proxy,
+      {
+        n: target,
+        duration: 0.7,
+        ease: "power2.out",
+        onUpdate: () => {
+          number.textContent = String(Math.round(proxy.n)).padStart(2, "0");
+        },
+      },
+      0,
+    );
+  }
+  if (copy.length) {
+    timeline.fromTo(
+      copy,
+      { y: 28, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.5,
+        stagger: 0.08,
+        ease: "power3.out",
+        onComplete: () => gsap.set(copy, { clearProps: "transform" }),
+      },
+      0.32,
+    );
+  }
+}
+
+function setupSteps(embed, pinned) {
+  const steps = [...document.querySelectorAll("#ordering .step")];
+  if (!steps.length || pinned) return;
+  const play = () => steps.forEach((step, index) => playStep(step, index * 0.12));
+  if (embed) {
+    play();
+    return;
+  }
+  ScrollTrigger.create({
+    trigger: "#ordering",
+    start: "top 75%",
+    once: true,
+    onEnter: play,
+  });
+}
+
 function setupPin(endPercent) {
   const section = document.querySelector("#ordering");
   const steps = [...document.querySelectorAll("#ordering .step")];
@@ -94,6 +156,7 @@ function setupPin(endPercent) {
     },
   });
 
+  timeline.add(() => playStep(steps[0]), 0);
   timeline.to(steps[0], { scale: 0.92, y: -36, autoAlpha: 0, duration: 1, ease: "none" }, 0);
   timeline.fromTo(
     steps[1],
@@ -101,7 +164,9 @@ function setupPin(endPercent) {
     { scale: 1, y: 0, autoAlpha: 1, duration: 1, ease: "none" },
     0,
   );
+  timeline.add(() => playStep(steps[1]), 1);
   timeline.to(steps[1], { scale: 0.92, y: -36, autoAlpha: 0, duration: 1, ease: "none" }, 1);
+  timeline.add(() => playStep(steps[2]), 1);
   timeline.fromTo(
     steps[2],
     { scale: 0.8, y: 48, autoAlpha: 0 },
@@ -113,7 +178,8 @@ function setupPin(endPercent) {
 function setupCards() {
   gsap.from(".card", {
     y: 40,
-    scale: 0.9,
+    scale: 0.94,
+    opacity: 0,
     duration: 0.8,
     ease: "power3.out",
     stagger: 0.08,
@@ -184,11 +250,11 @@ function setupEmbedReveals() {
   });
 
   gsap.from(".card", {
-    y: 24,
-    scale: 0.96,
+    y: 28,
+    opacity: 0,
     duration: 0.7,
     ease: "power3.out",
-    stagger: 0.06,
+    stagger: 0.08,
     immediateRender: false,
   });
 
@@ -222,11 +288,17 @@ function setupHovers() {
     if (fine) {
       button.addEventListener("pointerenter", () => {
         gsap.to(button, { scale: 1.05, duration: 0.25, ease: "power2.out", overwrite: "auto" });
-        if (sweep) gsap.to(sweep, { scaleX: 1, duration: 0.25, ease: "power2.out", overwrite: "auto" });
+        if (sweep) {
+          gsap.fromTo(
+            sweep,
+            { xPercent: -180 },
+            { xPercent: 320, duration: 0.55, ease: "power2.out", overwrite: "auto" },
+          );
+        }
       });
       button.addEventListener("pointerleave", () => {
         gsap.to(button, { scale: 1, duration: 0.2, ease: "power2.out", overwrite: "auto" });
-        if (sweep) gsap.to(sweep, { scaleX: 0, duration: 0.2, ease: "power2.in", overwrite: "auto" });
+        if (sweep) gsap.set(sweep, { xPercent: -180 });
       });
       button.addEventListener("pointerdown", () => {
         gsap.to(button, { scale: 0.97, duration: 0.08, overwrite: "auto" });
@@ -250,7 +322,7 @@ function setupHovers() {
   if (!fine) return;
 
   document.querySelectorAll(".card").forEach((card) => {
-    const image = card.querySelector("img");
+    const image = card.querySelector(".card__video, img");
     const border = card.querySelector(".card__border");
     card.addEventListener("pointerenter", () => {
       gsap.to(card, { y: -8, duration: 0.3, ease: "back.out(1.7)", overwrite: "auto" });
@@ -440,17 +512,7 @@ export async function setupMotion() {
         }
       });
 
-      document.querySelectorAll(".step__num").forEach((number) => {
-        const popped = splitHeading(number, { chars: true, stagger: 0.03, play: embed });
-        if (!embed) {
-          ScrollTrigger.create({
-            trigger: "#ordering",
-            start: "top 75%",
-            once: true,
-            onEnter: () => popped.tween.play(),
-          });
-        }
-      });
+      setupSteps(embed, !embed && !phone);
 
       if (h1Tween) {
         introDone.promise.then(() => {
