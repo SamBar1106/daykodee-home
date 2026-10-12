@@ -201,7 +201,7 @@ export function setupProducts() {
       if (!entries.some((entry) => entry.isIntersecting)) return;
       started = true;
       observer.disconnect();
-        boot(views, false).catch(() => {
+      boot(views, false).catch(() => {
         /* Posters stay in place if WebGL or a model fails. */
       });
     },
