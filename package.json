@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "posters": "node scripts/posters.mjs"
   },
   "dependencies": {
     "@fontsource/montserrat": "^5.3.0",
