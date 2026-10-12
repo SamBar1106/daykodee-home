@@ -241,6 +241,46 @@ function setupLenis() {
   };
 }
 
+function flyLogo(intro, introDone) {
+  if (flyLogo.started) return;
+  flyLogo.started = true;
+  const image = intro.querySelector("img");
+  const embed = document.documentElement.classList.contains("is-embed");
+  const target = document.querySelector(embed ? ".hero__mark img" : ".brand__img");
+  if (!image || !target) {
+    intro.remove();
+    gsap.set(".brand__img, .hero__mark img", { opacity: 1 });
+    introDone.resolve();
+    return;
+  }
+
+  const reveal = () => {
+    gsap.set(".brand__img, .hero__mark img", { opacity: 1 });
+    intro.remove();
+    introDone.resolve();
+  };
+
+  gsap.set(image, { scale: 0.4, opacity: 0 });
+  const timeline = gsap.timeline();
+  flyLogo.tween = timeline;
+  timeline.to(image, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2.2)" });
+  timeline.add(() => {
+    const from = image.getBoundingClientRect();
+    const to = target.getBoundingClientRect();
+    const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+    const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+    const scale = to.width > 0 && from.width > 0 ? to.width / from.width : 0.22;
+    gsap.to(image, {
+      x: dx,
+      y: dy,
+      scale,
+      duration: 0.6,
+      ease: "power3.inOut",
+      onComplete: reveal,
+    });
+  });
+}
+
 export async function setupMotion() {
   const introDone = deferred();
   const beatsReady = deferred();
@@ -249,6 +289,18 @@ export async function setupMotion() {
     beatsReady: beatsReady.promise,
     bounceH1() {},
   };
+
+  const reduceNow =
+    document.documentElement.classList.contains("reduce-motion") ||
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const intro = document.querySelector(".logo-intro");
+  if (reduceNow || !intro) {
+    intro?.remove();
+    gsap.set(".brand__img, .hero__mark img", { opacity: 1 });
+    introDone.resolve();
+  } else {
+    flyLogo(intro, introDone);
+  }
 
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   await new Promise((resolve) => {
@@ -290,6 +342,8 @@ export async function setupMotion() {
         document.querySelectorAll(".pop").forEach((el) => {
           el.dataset.split = "1";
         });
+        gsap.set(".brand__img, .hero__mark img", { opacity: 1 });
+        document.querySelector(".logo-intro")?.remove();
         introDone.resolve();
         beatsReady.resolve();
         return undefined;
@@ -339,8 +393,6 @@ export async function setupMotion() {
         });
       });
 
-      introDone.resolve();
-
       if (h1Tween) {
         introDone.promise.then(() => {
           if (h1Tween.progress() === 0) h1Tween.play();
@@ -362,7 +414,15 @@ export async function setupMotion() {
   );
 
   setupHovers();
-  window.setTimeout(() => introDone.resolve(), 2800);
+  window.setTimeout(() => {
+    if (document.querySelector(".logo-intro")) {
+      flyLogo.tween?.kill();
+      gsap.killTweensOf(".logo-intro img");
+      document.querySelector(".logo-intro")?.remove();
+      gsap.set(".brand__img, .hero__mark img", { opacity: 1 });
+    }
+    introDone.resolve();
+  }, 2800);
   window.setTimeout(() => beatsReady.resolve(), 4500);
 
   return api;

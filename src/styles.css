@@ -474,6 +474,30 @@ html.needs-play .hero__play {
   display: none;
 }
 
+.logo-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.logo-intro img {
+  width: min(68vw, 300px);
+  height: auto;
+  transform-origin: center center;
+}
+
+html.js:not(.reduce-motion) .brand__img,
+html.js:not(.reduce-motion) .hero__mark img {
+  opacity: 0;
+}
+
+html.reduce-motion .logo-intro {
+  display: none;
+}
+
 .char,
 .word,
 .char-mask,
@@ -492,8 +516,12 @@ html.needs-play .hero__play {
 }
 
 html.reduce-motion .pop,
+html.reduce-motion .brand__img,
+html.reduce-motion .hero__mark img,
 html.show-text .pop,
-html.js.show-text .section__stage {
+html.js.show-text .section__stage,
+html.js.show-text .brand__img,
+html.js.show-text .hero__mark img {
   opacity: 1;
 }
 

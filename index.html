@@ -23,6 +23,11 @@
       html { background: #00276c; }
       body { margin: 0; background: #ebdfc2; color: #00276c; }
       html.js:not(.reduce-motion) .section__stage { opacity: 0; }
+      html.js:not(.reduce-motion) .brand__img,
+      html.js:not(.reduce-motion) .hero__mark img { opacity: 0; }
+      .logo-intro { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; pointer-events: none; }
+      html.reduce-motion .logo-intro { display: none; }
+      html.js:not(.reduce-motion) .logo-intro img { width: min(68vw, 300px); height: auto; opacity: 0; }
     </style>
     <script>
       (function () {
@@ -76,6 +81,9 @@
           <video class="hero__video" muted playsinline preload="none" aria-hidden="true"></video>
           <div class="hero__overlay"></div>
           <div class="hero__shade"></div>
+        </div>
+        <div class="logo-intro" aria-hidden="true">
+          <img src="%BASE_URL%media/logo.webp" alt="" width="720" height="473" />
         </div>
         <a class="hero__mark" href="#main">
           <img src="%BASE_URL%media/logo.webp" alt="Daykodee" width="720" height="473" />
