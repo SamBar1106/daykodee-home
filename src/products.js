@@ -108,28 +108,79 @@ function normalize(THREE, wrapper) {
   const box = new THREE.Box3().setFromObject(wrapper);
   const size = box.getSize(new THREE.Vector3());
   const center = box.getCenter(new THREE.Vector3());
-  const fit = 1.2 / Math.max(size.x, size.y, size.z);
+  const fit = 1.15 / Math.max(size.x, size.y, 0.001);
   wrapper.scale.setScalar(fit);
   wrapper.position.set(-center.x * fit, -center.y * fit, -center.z * fit);
   return wrapper;
 }
 
-function frameCamera(camera, count, stacked, aspect) {
-  const span = Math.max(count - 1, 0) * 1.55;
-  const width = stacked ? 1.4 : span + 1.4;
-  const height = stacked ? span + 1.45 : 1.5;
-  const fov = 28;
+function frameCamera(camera, contentWidth, contentHeight, nearZ, lookY, aspect) {
+  const fov = 26;
   const halfFov = (fov * Math.PI) / 180 / 2;
-  const distY = height * 0.5 / Math.tan(halfFov);
-  const distX = width * 0.5 / (Math.tan(halfFov) * Math.max(aspect, 0.2));
+  const hFov = Math.atan(Math.tan(halfFov) * Math.max(aspect, 0.2));
+  const distY = contentHeight * 0.5 / Math.tan(halfFov) + nearZ;
+  const distX = contentWidth * 0.5 / Math.tan(hFov) + nearZ;
   const dist = Math.max(distY, distX) * 1.08;
   camera.fov = fov;
   camera.aspect = aspect;
-  camera.position.set(0, 0, dist);
+  camera.position.set(0, lookY, dist);
   camera.near = Math.max(0.01, dist / 80);
   camera.far = dist * 12;
-  camera.lookAt(0, 0, 0);
+  camera.lookAt(0, lookY, 0);
   camera.updateProjectionMatrix();
+}
+
+/** One horizontal row. Spacing uses the real bounds of the widest pose. */
+function layoutRow(THREE, products) {
+  const yaws = [-0.64, 0, 0.64];
+  const pitches = [-0.22, 0, 0.22];
+  const gap = 0.42;
+  const measured = products.map((spin) => {
+    spin.rotation.set(0, 0, 0);
+    spin.position.set(0, 0, 0);
+    spin.updateWorldMatrix(true, true);
+    const rest = new THREE.Box3().setFromObject(spin);
+    const restSize = rest.getSize(new THREE.Vector3());
+    let halfW = restSize.x / 2;
+    let maxY = rest.max.y;
+    let minY = rest.min.y;
+    let nearZ = rest.max.z;
+    for (const yaw of yaws) {
+      for (const pitch of pitches) {
+        spin.rotation.set(pitch, yaw, 0);
+        spin.updateWorldMatrix(true, true);
+        const box = new THREE.Box3().setFromObject(spin);
+        halfW = Math.max(halfW, Math.abs(box.min.x), Math.abs(box.max.x));
+        maxY = Math.max(maxY, box.max.y);
+        minY = Math.min(minY, box.min.y);
+        nearZ = Math.max(nearZ, box.max.z);
+      }
+    }
+    spin.rotation.set(0, 0, 0);
+    return { spin, hy: restSize.y / 2, halfW, maxY, minY, nearZ };
+  });
+  const totalW = measured.reduce((sum, item) => sum + item.halfW * 2, 0) + gap * Math.max(measured.length - 1, 0);
+  let cursor = -totalW / 2;
+  const maxHy = Math.max(...measured.map((item) => item.hy));
+  let spanTop = -Infinity;
+  let spanBottom = Infinity;
+  let nearZ = 0;
+  measured.forEach((item) => {
+    const baseY = -maxHy + item.hy;
+    item.spin.userData.baseX = cursor + item.halfW;
+    item.spin.userData.baseY = baseY;
+    cursor += item.halfW * 2 + gap;
+    spanTop = Math.max(spanTop, baseY + item.maxY);
+    spanBottom = Math.min(spanBottom, baseY + item.minY);
+    nearZ = Math.max(nearZ, item.nearZ);
+  });
+  const pad = 0.12;
+  return {
+    contentW: totalW + pad,
+    contentH: spanTop - spanBottom + pad + 0.1,
+    nearZ,
+    lookY: (spanTop + spanBottom) / 2,
+  };
 }
 
 export function setupProducts() {
@@ -164,19 +215,18 @@ async function boot(views) {
   const reduce = window.matchMedia(REDUCE).matches;
   const fine = window.matchMedia(FINE).matches;
 
+  const host = views[0];
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
     alpha: true,
     powerPreference: "high-performance",
   });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.autoClear = false;
+  renderer.setClearColor(0x000000, 0);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
-  renderer.setSize(window.innerWidth, window.innerHeight);
   const canvas = renderer.domElement;
   canvas.setAttribute("aria-hidden", "true");
-  canvas.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:6;";
-  document.body.appendChild(canvas);
+  host.appendChild(canvas);
 
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
@@ -197,7 +247,6 @@ async function boot(views) {
   const scenes = views.map((view) => {
     const names = (view.dataset.products || ORDER.join(" ")).split(/\s+/).filter((name) => templates.has(name));
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#EBDFC2");
     scene.add(new THREE.AmbientLight(0xffffff, 0.92));
     const key = new THREE.DirectionalLight(0xffffff, 1.75);
     key.position.set(1.4, 2.6, 4);
@@ -217,7 +266,8 @@ async function boot(views) {
       return spin;
     });
 
-    const camera = new THREE.PerspectiveCamera(28, 1, 0.01, 50);
+    const camera = new THREE.PerspectiveCamera(26, 1, 0.01, 50);
+    const bounds = layoutRow(THREE, products);
     const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
     if (!reduce && fine) {
       view.addEventListener("pointermove", (event) => {
@@ -231,16 +281,19 @@ async function boot(views) {
       });
     }
 
-    return { view, scene, root, products, camera, pointer };
+    return { view, scene, root, products, camera, pointer, bounds };
   });
 
   const resize = () => {
+    const rect = host.getBoundingClientRect();
+    const width = Math.max(1, Math.round(rect.width));
+    const height = Math.max(1, Math.round(rect.height));
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    canvas.style.width = "100%";
-    canvas.style.height = "100%";
+    renderer.setSize(width, height, false);
   };
-  window.addEventListener("resize", resize);
+  resize();
+  const resizeObserver = new ResizeObserver(resize);
+  resizeObserver.observe(host);
 
   let running = false;
   const visible = new Set();
@@ -270,53 +323,38 @@ async function boot(views) {
     }
 
     const elapsed = clock.getElapsedTime();
-    const dpr = renderer.getPixelRatio();
     const height = window.innerHeight;
-
-    renderer.setScissorTest(false);
     renderer.setClearColor(0x000000, 0);
     renderer.clear(true, true, true);
-    renderer.setScissorTest(true);
 
     for (const item of scenes) {
       if (!visible.has(item.view)) continue;
       const rect = item.view.getBoundingClientRect();
-      const border = 3;
-      const left = rect.left + border;
-      const top = rect.top + border;
-      const width = Math.max(1, rect.width - border * 2);
-      const heightPx = Math.max(1, rect.height - border * 2);
-      if (top > height || top + heightPx < 0) continue;
+      if (rect.width < 2 || rect.height < 2) continue;
+      if (rect.bottom < 0 || rect.top > height) continue;
 
-      const stacked = item.products.length > 1 && width < 560;
       if (!reduce) {
         item.pointer.x += (item.pointer.tx - item.pointer.x) * 0.08;
         item.pointer.y += (item.pointer.ty - item.pointer.y) * 0.08;
       }
       const mid = (rect.top + rect.height / 2) / height - 0.5;
-      item.products.forEach((spin, index) => {
-        const count = item.products.length;
-        const offset = index - (count - 1) / 2;
-        const layoutY = stacked ? ((count - 1) / 2) * 1.55 - index * 1.55 : 0;
-        spin.position.x = stacked ? 0 : offset * 1.55;
+      item.products.forEach((spin) => {
         const phase = spin.userData.phase;
+        spin.position.x = spin.userData.baseX;
+        spin.position.z = 0;
         if (reduce) {
           spin.rotation.set(0, 0, 0);
-          spin.position.y = layoutY;
-          spin.position.z = 0;
+          spin.position.y = spin.userData.baseY;
         } else {
           spin.rotation.y = Math.sin(elapsed * 0.42 + phase) * 0.38 + item.pointer.x;
           spin.rotation.x = Math.sin(elapsed * 0.33 + phase) * 0.05 + item.pointer.y + mid * -0.16;
-          spin.position.y = layoutY + Math.sin(elapsed * 1.15 + phase) * 0.04;
+          spin.position.y = spin.userData.baseY + Math.sin(elapsed * 1.15 + phase) * 0.04;
         }
       });
 
-      frameCamera(item.camera, item.products.length, stacked, width / heightPx);
-      renderer.setViewport(left * dpr, (height - (top + heightPx)) * dpr, width * dpr, heightPx * dpr);
-      renderer.setScissor(left * dpr, (height - (top + heightPx)) * dpr, width * dpr, heightPx * dpr);
-      renderer.clearDepth();
+      const aspect = canvas.width / Math.max(canvas.height, 1);
+      frameCamera(item.camera, item.bounds.contentW, item.bounds.contentH, item.bounds.nearZ, item.bounds.lookY, aspect);
       renderer.render(item.scene, item.camera);
-      item.view.classList.add("is-live");
       item.view.dataset.ready = "1";
     }
   }

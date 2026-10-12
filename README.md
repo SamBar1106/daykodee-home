@@ -19,7 +19,7 @@ Open `?embed=1`, or load the page in an iframe, to hide this site's header. The 
 
 ## Products
 
-The hero shows the bottle, cap, and backpack from `public/models`. The why section shows the backpack again. Three.js (`GLTFLoader` and the meshopt decoder) loads after first paint, and only once a product view is near the viewport. One renderer draws every view, with the pixel ratio capped at 1.5, and it pauses while the views are off screen. `logo-decal.png` is projected on the front of each model. `prefers-reduced-motion` keeps that front view still.
+The bottle, cap, and backpack from `public/models` sit together in one horizontal row directly under the hero, on the cream page with no frame or backdrop. They stay in that row at every width, including 390px, scaled so each model stays fully visible. Three.js (`GLTFLoader` and the meshopt decoder) loads after first paint, once the row is near the viewport. One renderer draws the row, with the pixel ratio capped at 1.5, and it pauses while the row is off screen. `logo-decal.png` is projected on the front of each model. `prefers-reduced-motion` keeps that front view still. Category photos are transparent WebP cut-outs, so the products sit on the cream card.
 
 ## Motion and video
 

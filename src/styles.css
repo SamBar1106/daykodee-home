@@ -432,29 +432,27 @@ html.needs-play .hero__play {
   aspect-ratio: 1433 / 942;
 }
 
+.showcase .section__stage {
+  background: var(--cream);
+  padding: clamp(1.25rem, 3.5vw, 2.5rem) 0;
+}
+
 .product-view {
   position: relative;
-  min-height: 210px;
-  background: var(--cream);
-  border: 3px solid var(--navy);
+  width: min(1120px, calc(100% - 1.5rem));
+  margin-inline: auto;
+  aspect-ratio: 2.7 / 1;
+  background: transparent;
   overflow: hidden;
 }
 
-.product-view[data-products="bottle cap backpack"] {
-  min-height: 760px;
-}
-
-.product-view__poster {
+.product-view canvas {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  min-height: inherit;
-  object-fit: cover;
-  object-position: center;
   display: block;
-}
-
-.product-view.is-live .product-view__poster {
-  visibility: hidden;
+  pointer-events: none;
 }
 
 .logo-intro {
@@ -564,16 +562,18 @@ h2 {
 
 .card__media {
   position: relative;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: var(--navy);
+  background: var(--cream);
 }
 
 .card__media img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   transform-origin: center;
+  padding: 0.65rem;
 }
 
 .card__border {
@@ -715,11 +715,6 @@ html.motion-pin .step {
 
 .note {
   font-weight: 600;
-}
-
-.why .product-view {
-  margin-top: 1.5rem;
-  min-height: 420px;
 }
 
 .about {
@@ -870,35 +865,12 @@ html.motion-pin .step {
     background: linear-gradient(90deg, rgba(0, 39, 108, 0.9) 0%, rgba(0, 39, 108, 0.62) 42%, rgba(0, 39, 108, 0.28) 100%);
   }
 
-  .hero__layout {
-    display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.15fr);
-    gap: 1.5rem;
-    align-items: end;
-  }
-
   .hero__title {
     font-size: clamp(2.7rem, 4.6vw, 4.7rem);
   }
 
-  .hero .product-view[data-products="bottle cap backpack"] {
-    min-height: 720px;
-  }
-
   .cards {
     grid-template-columns: 1fr 1fr;
-  }
-
-  .why__grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(240px, 0.8fr);
-    gap: 2rem;
-    align-items: center;
-  }
-
-  .why .product-view {
-    margin-top: 0;
-    min-height: 460px;
   }
 
   .about__grid {
@@ -930,10 +902,6 @@ html.motion-pin .step {
 
   .card:nth-child(5) {
     grid-column: 4 / span 2;
-  }
-
-  .hero .product-view[data-products="bottle cap backpack"] {
-    min-height: 480px;
   }
 }
 
